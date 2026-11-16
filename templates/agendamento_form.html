@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ acao }} Agendamento - VetCare{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--gray-200); padding-bottom: 0.75rem;">
+        <h1 class="page-title" style="font-size: 1.35rem;">
+            <span>{% if acao == 'Editar' %}✏️{% else %}📅{% endif %}</span> {{ acao }} Agendamento
+        </h1>
+        <p class="page-subtitle">
+            Selecione o paciente animal (e seu respectivo tutor) e defina data, horário e serviço da consulta.
+        </p>
+    </div>
+
+    <form method="POST">
+        <div class="form-group" style="background: #f0fdfa; border: 1px solid #99f6e4; padding: 1rem; border-radius: var(--radius);">
+            <label for="pet_id" class="form-label" style="color: #0f766e;">
+                🐾 Paciente (Pet) e Tutor Responsável *
+            </label>
+            <select id="pet_id" name="pet_id" class="form-control" required>
+                <option value="">-- Selecione o Pet / Paciente --</option>
+                {% for p in pets %}
+                    <option value="{{ p.id }}" {% if agendamento and agendamento.pet_id|string == p.id|string %}selected{% endif %}>
+                        Pet: {{ p.nome }} ({{ p.especie }} - {{ p.raca }}) | Tutor: {{ p.tutor_nome }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-row" style="margin-top: 1rem;">
+            <div class="form-group">
+                <label for="data_agendamento" class="form-label">Data do Agendamento *</label>
+                <input type="date" id="data_agendamento" name="data_agendamento" class="form-control"
+                       value="{{ agendamento.data_agendamento if agendamento else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="hora_agendamento" class="form-label">Horário *</label>
+                <input type="time" id="hora_agendamento" name="hora_agendamento" class="form-control"
+                       value="{{ agendamento.hora_agendamento if agendamento else '' }}" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="tipo_servico" class="form-label">Tipo de Atendimento / Serviço *</label>
+                <select id="tipo_servico" name="tipo_servico" class="form-control" required>
+                    <option value="">Selecione o serviço...</option>
+                    <option value="Consulta Clínica Geral" {% if agendamento and agendamento.tipo_servico == 'Consulta Clínica Geral' %}selected{% endif %}>Consulta Clínica Geral</option>
+                    <option value="Vacinação Antirrábica e V5/V10" {% if agendamento and agendamento.tipo_servico == 'Vacinação Antirrábica e V5/V10' %}selected{% endif %}>Vacinação Antirrábica e V5/V10</option>
+                    <option value="Exame Laboratorial / Sangue" {% if agendamento and agendamento.tipo_servico == 'Exame Laboratorial / Sangue' %}selected{% endif %}>Exame Laboratorial / Sangue</option>
+                    <option value="Exame Cardiológico / Ecodoppler" {% if agendamento and agendamento.tipo_servico == 'Exame Cardiológico / Ecodoppler' %}selected{% endif %}>Exame Cardiológico / Ecodoppler</option>
+                    <option value="Limpeza de Tártaro / Profilaxia" {% if agendamento and agendamento.tipo_servico == 'Limpeza de Tártaro / Profilaxia' %}selected{% endif %}>Limpeza de Tártaro / Profilaxia</option>
+                    <option value="Castração / Procedimento Cirúrgico" {% if agendamento and agendamento.tipo_servico == 'Castração / Procedimento Cirúrgico' %}selected{% endif %}>Castração / Procedimento Cirúrgico</option>
+                    <option value="Consulta Especializada de Aves" {% if agendamento and agendamento.tipo_servico == 'Consulta Especializada de Aves' %}selected{% endif %}>Consulta Especializada de Aves</option>
+                    <option value="Outro Procedimento" {% if agendamento and agendamento.tipo_servico == 'Outro Procedimento' %}selected{% endif %}>Outro Procedimento</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="status" class="form-label">Status do Agendamento</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="Agendado" {% if not agendamento or agendamento.status == 'Agendado' %}selected{% endif %}>Agendado</option>
+                    <option value="Confirmado" {% if agendamento and agendamento.status == 'Confirmado' %}selected{% endif %}>Confirmado</option>
+                    <option value="Concluído" {% if agendamento and agendamento.status == 'Concluído' %}selected{% endif %}>Concluído</option>
+                    <option value="Cancelado" {% if agendamento and agendamento.status == 'Cancelado' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="observacoes" class="form-label">Observações e Recomendações Pré-Consulta</label>
+            <textarea id="observacoes" name="observacoes" class="form-control" rows="3"
+                      placeholder="Jejum prévio, sintomas relatados pelo tutor...">{{ agendamento.observacoes if agendamento else '' }}</textarea>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+            <a href="{{ url_for('agendamentos') }}" class="btn btn-outline">Cancelar / Voltar</a>
+            <button type="submit" class="btn btn-primary">
+                <span>💾</span> Salvar Agendamento no Banco
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

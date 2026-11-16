@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciamento de Agendamentos - VetCare{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <span>📅</span> Gerenciamento de Agendamentos
+        </h1>
+        <p class="page-subtitle">
+            Consultas e procedimentos organizados em ordem cronológica por dia de agendamento, integrando dados completos do tutor e do pet.
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('agendamento_novo') }}" class="btn btn-primary">
+            <span>➕</span> Novo Agendamento
+        </a>
+    </div>
+</div>
+
+<!-- Tabela de Agendamentos Ordenada por Dia -->
+<div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Data & Horário</th>
+                <th>Dados do Paciente (Pet)</th>
+                <th>Dados do Tutor Responsável</th>
+                <th>Serviço Solicitado</th>
+                <th>Status</th>
+                <th style="text-align: center;">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if agendamentos %}
+                {% for a in agendamentos %}
+                <tr>
+                    <td><strong>#{{ a.agendamento_id }}</strong></td>
+                    <td>
+                        <div style="font-weight: 700; color: #0f766e; font-size: 1rem;">
+                            📅 {{ a.data_agendamento }}
+                        </div>
+                        <div style="color: var(--gray-500); font-size: 0.85rem;">
+                            ⏰ {{ a.hora_agendamento }}
+                        </div>
+                    </td>
+                    <td>
+                        <strong>🐾 {{ a.pet_nome }}</strong><br>
+                        <span class="badge badge-info" style="font-size: 0.75rem;">{{ a.pet_especie }} ({{ a.pet_raca }})</span><br>
+                        <small style="color: var(--gray-700);">
+                            ⚖️ Peso: {{ "%.2f"|format(a.pet_peso) }} kg | 🎂 Nasc: {{ a.pet_data_nascimento }}
+                        </small>
+                        {% if a.pet_obs %}
+                            <br><small style="color: #64748b; font-style: italic;">Obs: {{ a.pet_obs }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>👤 {{ a.tutor_nome }}</strong><br>
+                        <div style="display: inline-flex; align-items: center; gap: 0.3rem; margin: 0.2rem 0;">
+                            <span class="badge badge-crypto" title="CPF protegido por criptografia no banco de dados">
+                                {{ a.tutor_cpf_masked }}
+                            </span>
+                            <button type="button" class="btn btn-outline btn-sm" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"
+                                    onclick="toggleCpfVisibility(this, '{{ a.tutor_cpf_masked }}', '{{ a.tutor_cpf_decrypted }}')">
+                                Revelar
+                            </button>
+                        </div><br>
+                        <small style="color: var(--gray-700);">📞 {{ a.tutor_telefone }} | ✉️ {{ a.tutor_email }}</small><br>
+                        <small style="color: var(--gray-500); font-size: 0.75rem;">📍 {{ a.tutor_endereco }}</small>
+                    </td>
+                    <td>
+                        <strong>{{ a.tipo_servico }}</strong>
+                        {% if a.agendamento_obs %}
+                            <br><small style="color: var(--gray-500);">{{ a.agendamento_obs }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge {% if a.status == 'Confirmado' %}badge-success{% elif a.status == 'Agendado' %}badge-info{% elif a.status == 'Concluído' %}badge-dark{% else %}badge-warning{% endif %}">
+                            {{ a.status }}
+                        </span>
+                    </td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        <!-- Botão com Modal para Atualizar Data do Agendamento (Regra de Negócio) -->
+                        <button type="button" class="btn btn-warning btn-sm" style="margin-bottom: 0.25rem;"
+                                onclick="abrirModalReagendar('{{ a.agendamento_id }}', '{{ a.data_agendamento }}', '{{ a.hora_agendamento }}', '{{ a.pet_nome }}', '{{ a.tutor_nome }}')"
+                                title="Atualizar data e salvar alteração no banco de dados">
+                            <span>🗓️</span> Alterar Data
+                        </button><br>
+                        <a href="{{ url_for('agendamento_editar', id=a.agendamento_id) }}" class="btn btn-outline btn-sm" title="Editar agendamento completo">
+                            <span>✏️</span> Editar
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                        Nenhum agendamento registrado.
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para Atualização Rápida da Data do Agendamento -->
+<div id="modalReagendar" class="modal-overlay">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--gray-200); padding-bottom: 0.5rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--dark);">
+                🗓️ Atualizar Data do Agendamento <span id="modalAgendamentoId"></span>
+            </h3>
+            <button type="button" onclick="fecharModalReagendar()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">&times;</button>
+        </div>
+
+        <p style="font-size: 0.9rem; color: var(--gray-700); margin-bottom: 1rem;">
+            Paciente: <strong id="modalInfoPaciente"></strong>
+        </p>
+
+        <form id="formReagendar" method="POST">
+            <div class="form-group">
+                <label for="inputNovaData" class="form-label">Nova Data do Agendamento *</label>
+                <input type="date" id="inputNovaData" name="nova_data" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="inputNovaHora" class="form-label">Horário do Atendimento</label>
+                <input type="time" id="inputNovaHora" name="nova_hora" class="form-control" required>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button type="button" class="btn btn-outline" onclick="fecharModalReagendar()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">
+                    <span>💾</span> Salvar Nova Data no Banco
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

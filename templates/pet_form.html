@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ acao }} Pet - VetCare{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--gray-200); padding-bottom: 0.75rem;">
+        <h1 class="page-title" style="font-size: 1.35rem;">
+            <span>{% if acao == 'Editar' %}✏️{% else %}🐶{% endif %}</span> {{ acao }} Pet (Paciente)
+        </h1>
+        <p class="page-subtitle">
+            Regra de Negócio: Todo pet deve estar obrigatoriamente associado a um tutor cadastrado.
+        </p>
+    </div>
+
+    <form method="POST">
+        <!-- Associação Obrigatória com o Tutor -->
+        <div class="form-group" style="background: #f0fdfa; border: 1px solid #99f6e4; padding: 1rem; border-radius: var(--radius);">
+            <label for="tutor_id" class="form-label" style="color: #0f766e;">
+                👥 Tutor Responsável (Associação Obrigatória) *
+            </label>
+            <select id="tutor_id" name="tutor_id" class="form-control" required>
+                <option value="">-- Selecione o tutor responsável pelo pet --</option>
+                {% for t in tutores %}
+                    <option value="{{ t.id }}" {% if pet and pet.tutor_id|string == t.id|string %}selected{% endif %}>
+                        #{{ t.id }} - {{ t.nome }}
+                    </option>
+                {% endfor %}
+            </select>
+            <span class="form-help" style="color: #0f766e;">Caso o tutor não esteja cadastrado, cadastre-o primeiro no menu Tutores.</span>
+        </div>
+
+        <div class="form-row" style="margin-top: 1rem;">
+            <div class="form-group">
+                <label for="nome" class="form-label">Nome do Pet *</label>
+                <input type="text" id="nome" name="nome" class="form-control"
+                       value="{{ pet.nome if pet else '' }}" required placeholder="Ex: Thor">
+            </div>
+
+            <div class="form-group">
+                <label for="especie" class="form-label">Espécie *</label>
+                <select id="especie" name="especie" class="form-control" required>
+                    <option value="">Selecione...</option>
+                    <option value="Canina" {% if pet and pet.especie == 'Canina' %}selected{% endif %}>Canina (Cão)</option>
+                    <option value="Felina" {% if pet and pet.especie == 'Felina' %}selected{% endif %}>Felina (Gato)</option>
+                    <option value="Ave" {% if pet and pet.especie == 'Ave' %}selected{% endif %}>Ave (Pássaro)</option>
+                    <option value="Roedor" {% if pet and pet.especie == 'Roedor' %}selected{% endif %}>Roedor (Hamster/Coelho)</option>
+                    <option value="Réptil" {% if pet and pet.especie == 'Réptil' %}selected{% endif %}>Réptil</option>
+                    <option value="Outro" {% if pet and pet.especie == 'Outro' %}selected{% endif %}>Outro</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="raca" class="form-label">Raça *</label>
+                <input type="text" id="raca" name="raca" class="form-control"
+                       value="{{ pet.raca if pet else '' }}" required placeholder="Ex: Golden Retriever, SRD, Siamês">
+            </div>
+
+            <div class="form-group">
+                <label for="data_nascimento" class="form-label">Data de Nascimento / Estimada *</label>
+                <input type="date" id="data_nascimento" name="data_nascimento" class="form-control"
+                       value="{{ pet.data_nascimento if pet else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="peso" class="form-label">Peso Atual (kg) *</label>
+                <input type="number" step="0.01" min="0.01" id="peso" name="peso" class="form-control"
+                       value="{{ pet.peso if pet else '' }}" required placeholder="Ex: 12.50">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="observacoes" class="form-label">Observações Clínicas / Histórico</label>
+            <textarea id="observacoes" name="observacoes" class="form-control" rows="3"
+                      placeholder="Alergias, doenças pré-existentes, comportamento...">{{ pet.observacoes if pet else '' }}</textarea>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+            <a href="{{ url_for('pets') }}" class="btn btn-outline">Cancelar / Voltar</a>
+            <button type="submit" class="btn btn-primary">
+                <span>💾</span> Salvar Pet no Banco de Dados
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

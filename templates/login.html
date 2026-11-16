@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - VetCare Clínica Veterinária</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-wrapper">
+
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-icon">🐾</div>
+            <h1 class="login-title">VetCare</h1>
+            <p class="login-subtitle">Sistema de Gestão & Agendamentos Veterinários</p>
+        </div>
+
+        <!-- Mensagens de Alerta (incluindo validação de falha na autenticação) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alerts-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <span><strong>Atenção:</strong> {{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Formulário de Autenticação -->
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="form-group">
+                <label for="email" class="form-label">E-mail Profissional</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="exemplo@clinica.com" value="{{ email or '' }}" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="senha" class="form-label">Senha de Acesso</label>
+                <input type="password" id="senha" name="senha" class="form-control" placeholder="Digite sua senha" required>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
+                    🔑 Entrar no Sistema
+                </button>
+            </div>
+        </form>
+
+        <div class="login-test-box">
+            <strong>ℹ️ Credenciais para Demonstração / Avaliação:</strong>
+            <ul style="margin-top: 0.5rem; margin-left: 1.2rem; font-size: 0.8rem; line-height: 1.4;">
+                <li><strong>Veterinária:</strong> camila.vet@clinica.com | <em>admin123</em></li>
+                <li><strong>Recepcionista:</strong> recepcao@clinica.com | <em>recepcao123</em></li>
+            </ul>
+            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #475569;">
+                🛡️ Sistema protegido com expiração automática de sessão e criptografia de dados (LGPD).
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

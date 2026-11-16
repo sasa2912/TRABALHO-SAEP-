@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Principal - VetCare{% endblock %}
+
+{% block content %}
+<div class="page-header" style="background: white; padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 1.5rem;">
+    <div>
+        <h1 class="page-title">
+            <span>👋</span> Olá, <strong>{{ g.user_name }}</strong>!
+        </h1>
+        <p class="page-subtitle">
+            Você está conectado como <strong>{{ g.user_role }}</strong>. Utilize o painel abaixo para gerenciar a rotina da clínica.
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <a href="{{ url_for('agendamento_novo') }}" class="btn btn-primary">
+            <span>➕</span> Novo Agendamento
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-logout">
+            <span>🚪</span> Sair do Sistema
+        </a>
+    </div>
+</div>
+
+<!-- Cards de Acesso Rápido aos Recursos do Sistema -->
+<h2 style="font-size: 1.2rem; font-weight: 700; color: var(--dark); margin-bottom: 1rem;">
+    📋 Recursos do Sistema
+</h2>
+
+<div class="dashboard-grid">
+    <!-- Card: Tutores -->
+    <div class="card">
+        <div class="card-icon">👥</div>
+        <div class="card-title">Tutores Cadastrados</div>
+        <div class="card-value">{{ tot_tutores }}</div>
+        <p class="card-desc">Controle de tutores com recurso de busca inteligente, edição e proteção do CPF com criptografia LGPD.</p>
+        <a href="{{ url_for('tutores') }}" class="btn btn-primary" style="width: 100%;">
+            <span>🔍</span> Gerenciar Tutores
+        </a>
+    </div>
+
+    <!-- Card: Pets -->
+    <div class="card">
+        <div class="card-icon">🐶</div>
+        <div class="card-title">Pacientes (Pets)</div>
+        <div class="card-value">{{ tot_pets }}</div>
+        <p class="card-desc">Prontuário dos pets com espécie, raça, peso e associação obrigatória ao tutor responsável.</p>
+        <a href="{{ url_for('pets') }}" class="btn btn-secondary" style="width: 100%;">
+            <span>🐾</span> Gerenciar Pets
+        </a>
+    </div>
+
+    <!-- Card: Agendamentos -->
+    <div class="card">
+        <div class="card-icon">📅</div>
+        <div class="card-title">Agendamentos</div>
+        <div class="card-value">{{ tot_agendamentos }}</div>
+        <p class="card-desc">Listagem cronológica organizada por dia, dados integrados do tutor/pet e remarcação rápida de datas.</p>
+        <a href="{{ url_for('agendamentos') }}" class="btn btn-warning" style="width: 100%;">
+            <span>🗓️</span> Gerenciar Agendamentos
+        </a>
+    </div>
+</div>
+
+<!-- Próximos Atendimentos -->
+<div style="background: white; padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--gray-200);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 0.5rem;">
+            <span>⏳</span> Próximos Agendamentos em Ordem Cronológica
+        </h3>
+        <a href="{{ url_for('agendamentos') }}" class="btn btn-outline btn-sm">Ver Todos</a>
+    </div>
+
+    {% if proximos %}
+    <div class="table-responsive" style="margin-bottom: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data & Hora</th>
+                    <th>Paciente (Pet)</th>
+                    <th>Tutor Responsável</th>
+                    <th>Tipo de Serviço</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in proximos %}
+                <tr>
+                    <td><strong>{{ a.data_agendamento }}</strong> às {{ a.hora_agendamento }}</td>
+                    <td><strong>{{ a.pet_nome }}</strong></td>
+                    <td>{{ a.tutor_nome }}</td>
+                    <td>{{ a.tipo_servico }}</td>
+                    <td>
+                        <span class="badge {% if a.status == 'Confirmado' %}badge-success{% elif a.status == 'Agendado' %}badge-info{% else %}badge-dark{% endif %}">
+                            {{ a.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('agendamentos') }}" class="btn btn-outline btn-sm">Ver Detalhes</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p style="color: var(--gray-500); font-style: italic;">Nenhum agendamento futuro encontrado.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ acao }} Tutor - VetCare{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--gray-200); padding-bottom: 0.75rem;">
+        <h1 class="page-title" style="font-size: 1.35rem;">
+            <span>{% if acao == 'Editar' %}✏️{% else %}➕{% endif %}</span> {{ acao }} Tutor
+        </h1>
+        <p class="page-subtitle">
+            {% if acao == 'Editar' %}
+                Atualize as informações do tutor. Ao salvar, as alterações serão persistidas no banco de dados.
+            {% else %}
+                Cadastre um novo tutor. O CPF será criptografado automaticamente antes da gravação no banco de dados.
+            {% endif %}
+        </p>
+    </div>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="nome" class="form-label">Nome Completo do Tutor *</label>
+            <input type="text" id="nome" name="nome" class="form-control"
+                   value="{{ tutor.nome if tutor else '' }}" required placeholder="Ex: Mariana Fernandes Costa">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cpf" class="form-label">CPF (Protegido por Criptografia LGPD) *</label>
+                <input type="text" id="cpf" name="cpf" class="form-control mask-cpf"
+                       value="{{ tutor.cpf if tutor else '' }}" required placeholder="000.000.000-00" maxlength="14">
+                <span class="form-help">🔒 O CPF é criptografado com chave AES-128 no banco de dados.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="telefone" class="form-label">Telefone / WhatsApp *</label>
+                <input type="text" id="telefone" name="telefone" class="form-control"
+                       value="{{ tutor.telefone if tutor else '' }}" required placeholder="(11) 98765-4321">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">E-mail para Contato *</label>
+            <input type="email" id="email" name="email" class="form-control"
+                   value="{{ tutor.email if tutor else '' }}" required placeholder="mariana.costa@email.com">
+        </div>
+
+        <div class="form-group">
+            <label for="endereco" class="form-label">Endereço Residencial Completo</label>
+            <input type="text" id="endereco" name="endereco" class="form-control"
+                   value="{{ tutor.endereco if tutor else '' }}" placeholder="Rua, Número, Bairro, Cidade/UF">
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+            <a href="{{ url_for('tutores') }}" class="btn btn-outline">Cancelar / Voltar</a>
+            <button type="submit" class="btn btn-primary">
+                <span>💾</span> Salvar no Banco de Dados
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

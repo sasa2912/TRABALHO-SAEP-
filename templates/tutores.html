@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciamento de Tutores - VetCare{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <span>👥</span> Gerenciamento de Tutores
+        </h1>
+        <p class="page-subtitle">
+            Cadastro, consulta e edição de tutores. CPFs são armazenados com criptografia forte no banco de dados (LGPD).
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('tutor_novo') }}" class="btn btn-primary">
+            <span>➕</span> Novo Tutor
+        </a>
+    </div>
+</div>
+
+<!-- Recurso de Busca com Inserção e Confirmação de Termo -->
+<div class="search-card">
+    <form method="GET" action="{{ url_for('tutores') }}" class="search-form">
+        <label for="q" style="font-weight: 600; font-size: 0.9rem; color: var(--gray-700);">Buscar Tutor:</label>
+        <input type="text" id="q" name="q" class="search-input"
+               placeholder="Digite o nome, e-mail, telefone ou CPF e confirme..."
+               value="{{ termo_busca or '' }}">
+        <button type="submit" class="btn btn-primary">
+            <span>🔍</span> Confirmar Busca
+        </button>
+        {% if termo_busca %}
+            <a href="{{ url_for('tutores') }}" class="btn btn-outline">
+                <span>🔄</span> Limpar Busca
+            </a>
+        {% endif %}
+    </form>
+    
+    {% if termo_busca %}
+        <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--primary-hover); font-weight: 600;">
+            🔎 Atualização da listagem: Exibindo registros correspondentes ao termo "<em>{{ termo_busca }}</em>" ({{ tutores|length }} encontrado{{ 's' if tutores|length != 1 else '' }}).
+        </div>
+    {% endif %}
+</div>
+
+<!-- Tabela de Tutores -->
+<div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome Completo</th>
+                <th>CPF (Armazenamento Criptografado - LGPD)</th>
+                <th>Telefone</th>
+                <th>E-mail</th>
+                <th>Endereço</th>
+                <th>Pets</th>
+                <th style="text-align: center;">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if tutores %}
+                {% for t in tutores %}
+                <tr>
+                    <td><strong>#{{ t.id }}</strong></td>
+                    <td><strong>{{ t.nome }}</strong></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <span class="badge badge-crypto" title="Dado sensível protegido por criptografia no banco de dados">
+                                {{ t.cpf_masked }}
+                            </span>
+                            <button type="button" class="btn btn-outline btn-sm"
+                                    onclick="toggleCpfVisibility(this, '{{ t.cpf_masked }}', '{{ t.cpf_decrypted }}')"
+                                    title="Visualizar CPF descriptografado com autorização">
+                                Revelar
+                            </button>
+                        </div>
+                    </td>
+                    <td>{{ t.telefone }}</td>
+                    <td>{{ t.email }}</td>
+                    <td style="max-width: 220px; font-size: 0.85rem;">{{ t.endereco }}</td>
+                    <td>
+                        <span class="badge badge-info">{{ t.total_pets }} pet{{ 's' if t.total_pets != 1 else '' }}</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <a href="{{ url_for('tutor_editar', id=t.id) }}" class="btn btn-secondary btn-sm" title="Editar dados e salvar no banco">
+                            <span>✏️</span> Editar
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                        Nenhum tutor encontrado{% if termo_busca %} para a busca realizada{% endif %}.
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
